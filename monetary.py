@@ -32,7 +32,7 @@ def main():
         st.subheader("Welcome to the Monetary Policy AI App!")
         image = Image.open('images\pro.jpg')
 
-        st.image(image, caption='Dollar and Kwacha')
+        st.image(image, caption='Monetary Policy AI')
         
         # App Features
         st.header("App Features:")
