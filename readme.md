@@ -41,23 +41,23 @@ Before running the app, ensure you have the following installed:
 2. Navigate to the project directory:
 Navigate to the project directory:
 
-    '''bash
+    ```bash
     cd monetary-policy-ai-app
-    '''
+    
 
 3. Install dependencies:
 
-    '''bash
+    ```bash
     pip install -r requirements.txt
-    '''
+    
 
 ### Usage
 Running the App
 Execute the following command in your terminal:
 
-'''bash
-    streamlit monetary.py
-    '''
+    ```bash
+    streamlit run monetary.py
+    
 
 Open your web browser and go to http://localhost:8501.
 
