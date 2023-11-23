@@ -41,13 +41,15 @@ Before running the app, ensure you have the following installed:
 2. Navigate to the project directory:
 Navigate to the project directory:
 
-'''bash
+    '''bash
     cd monetary-policy-ai-app
+    '''
 
 3. Install dependencies:
 
-'''bash
+    '''bash
     pip install -r requirements.txt
+    '''
 
 ### Usage
 Running the App
@@ -55,6 +57,7 @@ Execute the following command in your terminal:
 
 '''bash
     streamlit monetary.py
+    '''
 
 Open your web browser and go to http://localhost:8501.
 
@@ -70,6 +73,9 @@ This project is licensed under the MIT License.
 For any inquiries or feedback, please contact:
 
 Kampamba Shula
+
 Email: kampambashula@gmail.com
+
 LinkedIn: https://www.linkedin.com/in/kampamba-shula-03946633/
+
 GitHub: https://github.com/kshula
