@@ -1,4 +1,5 @@
 # Monetary Policy AI App
+![Monetary Policy AI App](images/pro.jpg)
 
 Welcome to the Monetary Policy AI App! This application provides tools for analyzing monetary policy data, visualizing yield curves, predicting committee decisions, and more.
 
