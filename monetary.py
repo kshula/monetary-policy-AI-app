@@ -30,7 +30,9 @@ def main():
     if page == "Home":
         st.title("Monetary Policy AI App")
         st.subheader("Welcome to the Monetary Policy AI App!")
-        
+        image = Image.open('images\pro.jpg')
+
+        st.image(image, caption='Dollar and Kwacha')
         
         # App Features
         st.header("App Features:")
