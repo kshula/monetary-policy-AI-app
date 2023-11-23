@@ -31,7 +31,7 @@ def main():
         st.title("Monetary Policy AI App")
         st.subheader("Welcome to the Monetary Policy AI App!")
         
-        image = Image.open('pro.jpg')
+        image = Image.open('images\pro.jpg')
 
         st.image(image)
 
@@ -126,7 +126,7 @@ def main():
     # Interest Rate page
     elif page == "Interest Rate":
         st.title("Interest Rate")
-        image = Image.open('ai3.jpg')
+        image = Image.open('images\\ai3.jpg')
 
         st.image(image)
         
@@ -156,7 +156,7 @@ def main():
     # MPC page
     elif page == "MPC":
         st.title("MPC Prediction")
-        image = Image.open('aiii.jpg')
+        image = Image.open('images\\aiii.jpg')
 
         st.image(image)
 
@@ -217,7 +217,7 @@ def main():
         # Regression page
     elif page == "Regression":
         st.title("Regression Analysis")
-        image = Image.open('leran.jpg')
+        image = Image.open('images\leran.jpg')
 
         st.image(image)
         
