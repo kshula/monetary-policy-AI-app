@@ -31,10 +31,7 @@ def main():
         st.title("Monetary Policy AI App")
         st.subheader("Welcome to the Monetary Policy AI App!")
         
-        image = Image.open('images\pro.jpg')
-
-        st.image(image)
-
+        
         # App Features
         st.header("App Features:")
         st.markdown("""
@@ -126,9 +123,7 @@ def main():
     # Interest Rate page
     elif page == "Interest Rate":
         st.title("Interest Rate")
-        image = Image.open('images\\ai3.jpg')
-
-        st.image(image)
+        
         
         # Line chart for lending rate, inflation, lending_margin, interbank_rate, and base rate
         fig_interest_rate = px.line(df, x='Date', y=df.columns[10:15], labels={'value': 'Rate', 'variable': 'Interest Rate'})
@@ -156,10 +151,7 @@ def main():
     # MPC page
     elif page == "MPC":
         st.title("MPC Prediction")
-        image = Image.open('images\\aiii.jpg')
-
-        st.image(image)
-
+        
         # Encode the 'mpc' column using LabelEncoder
         le = LabelEncoder()
         df['mpc_encoded'] = le.fit_transform(df['mpc'])
@@ -217,9 +209,7 @@ def main():
         # Regression page
     elif page == "Regression":
         st.title("Regression Analysis")
-        image = Image.open('images\leran.jpg')
-
-        st.image(image)
+        
         
         # Define X and Y variables for regression
         Y = df['base_rate']
