@@ -1,8 +1,9 @@
 import streamlit as st
 import pandas as pd
-import seaborn as sns
 import plotly.express as px
 from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from sklearn.tree import DecisionTreeRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 import numpy as np
@@ -10,7 +11,9 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.metrics import accuracy_score, precision_score
-from PIL import Image
+import statsmodels.api as sm
+from sklearn.preprocessing import StandardScaler
+
 
 @st.cache_data
 def load_data():
@@ -19,19 +22,73 @@ def load_data():
     
     return df
 
+@st.cache_data
+def load_ml_data():
+    ml_df = pd.read_csv('suzyo.csv')
+    scaler = StandardScaler()
+    ml_df['money_supply_scaled'] = scaler.fit_transform(ml_df[['money_supply']]) 
+    return ml_df
+
+
+# Function to run the OLS regression 5yr
+def run_ols_regression_5yr(ml_df):
+    # Define the dependent and independent variables
+    X_VARIABLES = ml_df.drop(columns=['Date', 'Yield_Spread_5yr_1yr', 'Yield_Spread_5yr_91_days','money_supply'])
+    Y_VARIABLE = ml_df['Yield_Spread_5yr_1yr']
+    
+    # Add a constant to the independent variables
+    X_VARIABLES = sm.add_constant(X_VARIABLES)
+    
+    # Fit the OLS model
+    model = sm.OLS(Y_VARIABLE, X_VARIABLES).fit()
+    
+    return model
+
+# Function to run the OLS regression 5yr
+def run_ols_regression_91days(ml_df):
+    # Define the dependent and independent variables
+    X_VARIABLES = ml_df.drop(columns=['Date', 'Yield_Spread_5yr_1yr', 'Yield_Spread_5yr_91_days', 'money_supply'])
+    Y_VARIABLE = ml_df['Yield_Spread_5yr_91_days']
+    
+    # Add a constant to the independent variables
+    X_VARIABLES = sm.add_constant(X_VARIABLES)
+    
+    # Fit the OLS model
+    model = sm.OLS(Y_VARIABLE, X_VARIABLES).fit()
+    
+    return model
+
+# Function to run Random Forest regression
+def run_random_forest(X_train, X_test, y_train, y_test):
+    rf = RandomForestRegressor()
+    rf.fit(X_train, y_train)
+    y_pred = rf.predict(X_test)
+    mse = mean_squared_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+    return rf, mse, r2, y_pred
+
+# Function to run Gradient Boosting regression
+def run_gradient_boosting(X_train, X_test, y_train, y_test):
+    gb = GradientBoostingRegressor()
+    gb.fit(X_train, y_train)
+    y_pred = gb.predict(X_test)
+    mse = mean_squared_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+    return gb, mse, r2, y_pred
+
+
+
 def main():
     df = load_data()
 
     # Sidebar
-    page = st.sidebar.selectbox("Select a page", ["Home", "Yield Curve", "Bonds & Treasury Bill", "Interest Rate", "Statistics", "MPC", "Regression"])
+    page = st.sidebar.radio("Select a page", ["Home", "Yield Curve", "Bonds & Treasury Bill", "Interest Rate", "Statistics", "MPC", "Regression"])
 
     # Home page
     # Home page
     if page == "Home":
-        st.title("Monetary Policy AI App")
-        st.subheader("Welcome to the Monetary Policy AI App!")
-        
-        
+        st.title("Yield spread and Yield curve Analysis")
+
         # App Features
         st.header("App Features:")
         st.markdown("""
@@ -57,29 +114,10 @@ def main():
 
         """)
 
-        # About the Creator
-        st.header("About the Creator:")
-        st.markdown("""
-        This app was created by Kampamba Shula.
-
-        **Contact Information:**
-        - Email: kampambashula@gmail.com
-        - LinkedIn: https://www.linkedin.com/in/kampamba-shula-03946633/
-        - GitHub: https://github.com/kshula
-        """)
-
-        # Disclaimer
-        st.header("Disclaimer:")
-        st.markdown("""
-        This app is for educational and informational purposes only. The predictions made by the app are based on historical data and should not be considered as financial advice.
-        """)
-
         # Footer
         st.markdown("---")
-        st.markdown("© 2023 Monetary Policy AI App. All rights reserved.")
+        st.markdown("© 2023 Yield spread and Yield curve Analysis.")
 
-    # Yield Curve page
-# Yield Curve page
 # Yield Curve page
     elif page == "Yield Curve":
         st.title("Yield Curve")
@@ -101,11 +139,6 @@ def main():
         st.plotly_chart(fig_10_vs_3)
         st.divider()  # 👈 Draws a horizontal rule
         st.text('The difference between 10 year and 3 year bond indicates trajectory of economy')
-
-        # Bar chart for last values in columns 1-9
-        fig_last_values = px.bar(x=df.columns[1:10], y=df.iloc[-1, 1:10], labels={'value': 'Rate', 'variable': 'Tenor'})
-        st.plotly_chart(fig_last_values)
-        st.text('This is latest yield curve, a flat or inverted curve indicates a recession')
 
 
     # Bonds & Treasury Bill page
@@ -132,22 +165,17 @@ def main():
     
     # Statistics page
     elif page == "Statistics":
-        st.title("Statistics")
+        st.title("Descriptive Statistics")
         
         # Drop 'mc' column
-        df_no_mpc = df.drop('mpc', axis=1)
+        df_no_mpc = df.drop(['mpc', 'Date'], axis=1)
         
         # Display statistical summary of columns
         st.write(df_no_mpc.describe())
         st.divider()  # 👈 Draws a horizontal rule
         # Correlation heatmap
-        corr_matrix = df_no_mpc.corr()
-        sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt=".2f")
-        st.set_option('deprecation.showPyplotGlobalUse', False)
-        st.pyplot()
-
-
-    # MPC page
+        
+        
     # MPC page
     elif page == "MPC":
         st.title("MPC Prediction")
@@ -176,7 +204,6 @@ def main():
         gb_model.fit(X_classification, Y_classification)
 
         
-
         # User-adjustable parameters using only columns 10-14
         inflation = st.slider("Inflation", min_value=df['inflation'].min(), max_value=df['inflation'].max())
         reserve = st.slider("Reserve", min_value=df['reserve'].min(), max_value=df['reserve'].max())
@@ -208,35 +235,89 @@ def main():
  
         # Regression page
     elif page == "Regression":
-        st.title("Regression Analysis")
+        st.title("Yield Spread Regression Analysis")
+        ml_df = load_ml_data()
+       
+        # Descriptive Statistics
+        st.header("Descriptive Statistics")
+        st.write(ml_df.describe())
+        st.divider()  # 👈 Draws a horizontal rule
+
+        
+        # Line chart for '10_year_minus_1yr' against time
+        st.header("Line chart for '5_year_minus_91_days' against time")
+        fig_Yield_Spread_5yr_1yr = px.bar(ml_df, x='Date', y='Yield_Spread_5yr_1yr', labels={'value': 'Rate', 'variable': 'Tenor'})
+        st.plotly_chart(fig_Yield_Spread_5yr_1yr)
+        st.divider()  # 👈 Draws a horizontal rule
+
+        st.header("Line chart for '5_year_minus_91_days' against time")
+        fig_Yield_Spread_5yr_91_days = px.bar(ml_df, x='Date', y='Yield_Spread_5yr_91_days', labels={'value': 'Rate', 'variable': 'Tenor'})
+        st.plotly_chart(fig_Yield_Spread_5yr_91_days)
+        st.divider()  # 👈 Draws a horizontal rule
+
+        # Display the data
+        st.write("Data Overview")
+        st.write(ml_df.head())
+
+        # Run OLS regression
+        model = run_ols_regression_5yr(ml_df)
+        
+        # Display OLS model summary
+        st.header("Scenario 1")
+        st.header("Yield_Spread_5yr_1yr - OLS Model Summary")
+        st.write(model.summary())
+        st.divider()
+
+
+        st.header("Scenario 2")
+        st.header("Yield_Spread_5yr_91_days - OLS Model Summary")
+        # Run OLS regression
+        model = run_ols_regression_91days(ml_df)
+        
+        # Display OLS model summary
+        st.write(model.summary())
+        st.divider()
+
+    # Prepare data for machine learning models
+        X = ml_df.drop(columns=['Date', 'Yield_Spread_5yr_1yr', 'Yield_Spread_5yr_91_days', 'money_supply'])
+        y = ml_df['Yield_Spread_5yr_91_days']
+        
+        # Split the data into training and testing sets (80:20)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        
+        # Run Random Forest regression
+        rf_model, rf_mse, rf_r2, rf_pred = run_random_forest(X_train, X_test, y_train, y_test)
+        
+        # Display Random Forest results
+        st.header("Random Forest Regression Results")
+        st.metric(label='Mean Squared Error', value=rf_mse)
+        st.metric(label='R-squared', value=rf_r2)
+        
+        # Run Gradient Boosting regression
+        gb_model, gb_mse, gb_r2, gb_pred = run_gradient_boosting(X_train, X_test, y_train, y_test)
+        
+        # Display Gradient Boosting results
+        st.header("Gradient Boosting Regression Results")
+        st.metric(label='Mean Squared Error', value=gb_mse)
+        st.metric(label='R-squared', value=gb_r2)
         
         
-        # Define X and Y variables for regression
-        Y = df['base_rate']
-        X = df.drop(['Date', 'base_rate', 'mpc'], axis=1)
-        
-        # Split the data based on dates
-        train_size = int(0.8 * len(df))
-        train_data, test_data = df.iloc[:train_size], df.iloc[train_size:]
-        
-        # Separate X and Y for training and testing
-        X_train, Y_train = train_data.drop(['Date', 'base_rate', 'mpc'], axis=1), train_data['base_rate']
-        X_test, Y_test = test_data.drop(['Date', 'base_rate', 'mpc'], axis=1), test_data['base_rate']
-        
-        # Create a linear regression model
-        model = LinearRegression()
-        
-        # Fit the model to the training data
-        model.fit(X_train, Y_train)
-        
-        # Predict the target variable on the test set
-        Y_pred = model.predict(X_test)
-        
-        # Display regression results
-        st.write(f'Coefficients: {model.coef_}')
-        st.write(f'Intercept: {model.intercept_}')
-        st.write(f'Mean Squared Error: {mean_squared_error(Y_test, Y_pred)}')
-        st.write(f'R-squared: {r2_score(Y_test, Y_pred)}')
+        # Display predictions
+        st.header("Predictions")
+        predictions_ml_df = pd.DataFrame({
+            'Actual': y_test,
+            'OLS_Predicted': model.predict(sm.add_constant(X_test)),
+            'Random_Forest_Predicted': rf_pred,
+            'Gradient_Boosting_Predicted': gb_pred
+        })
+        st.write(predictions_ml_df)
+
+        if gb_r2 < rf_r2:
+            st.write('Random forest model is the best model')
+        else:
+            st.write('Gradient boosting is the best model')
+
+       
 
 if __name__ == "__main__":
     main()
